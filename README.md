@@ -117,7 +117,7 @@ Imagine you are trying to test a file "PARENT" which has already been `require`d
 
 ```javascript
 var fs = require('fs');
-var fileToTest = require('./fileToTest'); //fileToTest requires fs as a dependency
+var fileToTest = require('./fileToTest'); //requires fs as a dependency
 mock('fs', {}); // fileToTest is still using the unmocked fs module
 
 fileToTest = reRequire('./fileToTest'); // fileToTest is now using your mock
@@ -127,8 +127,12 @@ Note that if PARENT requires dependencies that in turn require DEP, those depend
 
 ```javascript
 var fs = require('fs');
-var http = require('http')
-var fileToTest = require('./fileToTest'); //fileToTest requires fs as a dependency
+var anotherDep = require('anotherDep') // requires fs as a dependency
+var fileToTest = require('./fileToTest'); // requires fs and anotherDep as a dependency
+mock('fs', {}); // fileToTest is still using the unmocked fs module
+mock('anotherDep', {}); // do this to make sure fs is being mocked consistently
+
+fileToTest = reRequire('./fileToTest');
 ```
 
 ## Test
