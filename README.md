@@ -111,17 +111,25 @@ path1 === path2; // false
 
 __path__: `String`
 
-The file whose cache you want to refresh. This is useful if you're trying to mock a dependency for a file that has already been required in elsewhere (possibly in another test file). Normally, Node.js will cache this file, so any mocks that you make afterwards will have no effect. `reRequire` clears the cache and allows your mock to apply.
+The filepath for a module whose cache you want to refresh.
+
+Imagine you are trying to test a file "PARENT" which has already been `require`d previously (e.g. in an earlier test file) and is therefore cached by Node. You want to mock one of PARENT's dependencies ("DEP"). Unfortunately, when you `require` PARENT, it fetches the cached PARENT with the old DEP, so your mock ("MOCK_DEP") has no effect. Calling `mock.reRequire('./path/to/PARENT')` forces PARENT to reload all of its dependencies, this time including MOCK_DEP.
 
 ```javascript
 var fs = require('fs');
-var fileToTest = require('./fileToTest');
+var fileToTest = require('./fileToTest'); //fileToTest requires fs as a dependency
 mock('fs', {}); // fileToTest is still using the unmocked fs module
 
 fileToTest = reRequire('./fileToTest'); // fileToTest is now using your mock
 ```
 
-Note that if your file under test requires dependencies that in turn require the mock, those dependencies will still have the unmocked version. You must `reRequire` all modules whose caches you want to be refreshed.
+Note that if PARENT requires dependencies that in turn require DEP, those dependencies will still have the unmocked version. You must `mock.reRequire` all modules whose caches you want to refresh. A relatively safe approach is to `mock.reRequire` or `mock` all of PARENT's dependencies, although you may skip any dependencies you are certain do not have DEP in their dependency tree.
+
+```javascript
+var fs = require('fs');
+var http = require('http')
+var fileToTest = require('./fileToTest'); //fileToTest requires fs as a dependency
+```
 
 ## Test
 
